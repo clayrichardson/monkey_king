@@ -1,0 +1,9 @@
+---
+meta1:
+  not_secret: not_secret
+  layer1:
+    - id1: !MK:env:id1 id1_from_env
+    - layer2:
+       - id2: !MK:env:id2 id2_from_env
+
+
