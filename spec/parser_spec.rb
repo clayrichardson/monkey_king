@@ -1,6 +1,6 @@
-
 require 'spec_helper'
 require 'yaml'
+require 'climate_control'
 
 describe MonkeyKing::Parser do
   context '#secret_tag' do
@@ -17,7 +17,7 @@ describe MonkeyKing::Parser do
     }
 
     it 'parse the secret annotation and replace it with a new secret' do
-      allow_any_instance_of(MonkeyKing::Secret).to receive(:gen_secret).and_return('new_secret')
+      allow_any_instance_of(MonkeyKing::SecretTag).to receive(:gen_secret).and_return('new_secret')
       transformed_yaml = parser.transform(secret_fixture_before)
       expect(transformed_yaml).to eql(secret_fixture_after_content)
     end
@@ -62,8 +62,10 @@ describe MonkeyKing::Parser do
     }
 
     it 'replace the field with env tag' do
-      transformed_yaml = parser.transform(env_fixture_before)
-      expect(transformed_yaml).to eql(env_fixture_after_content)
+			ClimateControl.modify id1: 'id1_from_env', id2: 'id2_from_env' do
+				transformed_yaml = parser.transform(env_fixture_before)
+				expect(transformed_yaml).to eql(env_fixture_after_content)
+			end
     end
 
   end

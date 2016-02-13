@@ -2,8 +2,7 @@ require 'yaml'
 require 'pry'
 
 module MonkeyKing
-
-  class Secret
+  class SecretTag
     yaml_tag '!MK:secret'
 
     attr_reader :secret
@@ -16,9 +15,6 @@ module MonkeyKing
       case coder.type
       when :scalar
         self.secret = coder.scalar
-      when :seq
-        binding.pry
-        self.secret = coder.seq
       else
         raise "Dunno how to handle #{coder.type} for #{coder.inspect}"
       end
@@ -38,10 +34,40 @@ module MonkeyKing
     end
   end
 
+	class EnvTag
+		attr_reader :env_tag
+
+		def self.register(tag)
+			if tag.split(':')[1] == 'env'
+					yaml_tag(tag)
+			end
+		end
+
+		def init_with( coder )
+			case coder.type
+			when :scalar
+
+			else
+				raise "Dunno how to handle #{coder.type} for #{coder.inspect}"
+			end
+		end
+
+		def encode_with(coder)
+			env_tag=coder.tag.split(':')[2]
+			coder.style = Psych::Nodes::Mapping::FLOW
+			coder.scalar = ENV[env_tag]
+		end
+	end
+
   class Parser
     def transform(yaml_file)
-      yaml = YAML.load_file(yaml_file).to_yaml
       tags = get_tags(yaml_file)
+			tags.each do |tag|
+				binding.pry
+				EnvTag.register(tag)
+			end
+
+      yaml = YAML.load_file(yaml_file).to_yaml
       yaml
     end
 
