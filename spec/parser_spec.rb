@@ -41,7 +41,7 @@ describe MonkeyKing::Parser do
       described_class.new
     }
 
-    it 'returns a list of the tags in the yaml file' do
+    it 'returns a list of uniq tags in the yaml file' do
       expect(parser.get_tags(tag_file)).to be_a Array
       expect(parser.get_tags(tag_file)).to eql(tags)
     end
@@ -61,13 +61,19 @@ describe MonkeyKing::Parser do
       described_class.new
     }
 
+    it 'raise error if the env does not exist' do
+			ClimateControl.modify id1: 'id1_from_env' do
+        expect{parser.transform(env_fixture_before) }.to raise_error(RuntimeError)
+			end
+    end
+
     it 'replace the field with env tag' do
 			ClimateControl.modify id1: 'id1_from_env', id2: 'id2_from_env' do
 				transformed_yaml = parser.transform(env_fixture_before)
 				expect(transformed_yaml).to eql(env_fixture_after_content)
 			end
     end
-
   end
+
 
 end
