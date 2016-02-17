@@ -6,4 +6,6 @@ gemspec
 gem 'guard-rspec', require: false
 gem 'climate_control'
 gem 'pry-byebug'
+gem 'mothership'
+gem 'highline'
 
