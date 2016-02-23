@@ -1,6 +1,5 @@
 require 'mothership'
 require 'highline/import'
-require 'pry'
 
 module MonkeyKing
   class CloneCommand < Mothership

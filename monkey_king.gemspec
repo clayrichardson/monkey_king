@@ -11,13 +11,13 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Creates new BOSH deployments from existing deployments}
   spec.description   = %q{It clones the existing BOSH deployments manifest and replaces the annotated fields}
-  spec.homepage      = "http://None"
+  spec.homepage      = "https://github.com/pivotal-cloudops/monkey_king"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.
   if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com'"
+    spec.metadata['allowed_push_host'] = "https://rubygems.org"
   else
     raise "RubyGems 2.0 or newer is required to protect against public gem pushes."
   end
@@ -27,9 +27,10 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_runtime_dependency "mothership", '~> 0.5.1'
+  spec.add_runtime_dependency 'highline', '~> 1.7', '>= 1.7.8'
+
   spec.add_development_dependency "bundler", "~> 1.11"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
-  spec.add_development_dependency "mothership", '~> 0.5.1'
-  spec.add_development_dependency "highline", '~> 1.7.8'
 end
