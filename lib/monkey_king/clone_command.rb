@@ -29,5 +29,29 @@ module MonkeyKing
         end
       end
     end
+
+    desc "Clone the repo and replace secret and env annotation"
+    input :globs, :argument => :splat
+    def replace
+      globs = input[:globs]
+      parser = MonkeyKing::Parser.new
+
+      deployment_yaml_files = []
+      deployment_yaml_files += Dir.glob(globs)
+
+      deployment_yaml_files.each do |file|
+        extension = file.split('.').last
+        if extension == 'yml'
+          puts "Transforming #{file}..."
+          transformed_content = parser.transform(file)
+          File.open(file, "w") do |overwrite_file|
+            overwrite_file.write transformed_content
+          end
+        else
+          puts "skipping non-yaml file #{file}..."
+        end
+      end
+    end
+
   end
 end
