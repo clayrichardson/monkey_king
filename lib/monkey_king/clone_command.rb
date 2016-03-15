@@ -6,10 +6,10 @@ module MonkeyKing
 
     desc "Clone the repo and replace secret and env annotation"
     input :repo, :argument => true
-    input :dir, :argument => :splat
+    input :dir, :argument => [:splat, true]
     def clone
       repo = input[:repo]
-      sub_dir = input[:dir]
+      sub_dir = Array(input[:dir])
 
       directory = repo.split('/').last.split('.').first
       parser = MonkeyKing::Parser.new
@@ -28,13 +28,17 @@ module MonkeyKing
           overwrite_file.write transformed_content
         end
       end
+      puts "Done."
     end
 
-    desc "Clone the repo and replace secret and env annotation"
+    desc "Replace secret and env annotation for existing directory"
     input :globs, :argument => :splat
     def replace
       globs = input[:globs]
       parser = MonkeyKing::Parser.new
+      if globs.empty?
+        raise 'no globs given in the argument'
+      end
 
       deployment_yaml_files = []
       deployment_yaml_files += Dir.glob(globs)
@@ -51,6 +55,7 @@ module MonkeyKing
           puts "skipping non-yaml file #{file}..."
         end
       end
+      puts "Done."
     end
 
   end
