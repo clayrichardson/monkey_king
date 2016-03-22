@@ -8,4 +8,5 @@ gem 'climate_control'
 gem 'pry-byebug'
 gem 'mothership'
 gem 'highline'
+gem 'sexpistol'
 

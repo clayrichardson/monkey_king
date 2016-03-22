@@ -1,0 +1,7 @@
+---
+meta1:
+  not_secret: not_secret
+  layer1:
+  - id1: !MK:write($tmp_id1,env(id1)) id1_from_env
+  - layer2:
+    - id2: !MK:read($tmp_id1) id1_from_env

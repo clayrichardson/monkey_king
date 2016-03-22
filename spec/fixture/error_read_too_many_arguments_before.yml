@@ -1,0 +1,5 @@
+---
+meta1:
+  layer1:
+  - param1: !MK:write(PARAM1,secret(10)) param1
+  - param2: !MK:read(PARAM1,secret(10)) param2

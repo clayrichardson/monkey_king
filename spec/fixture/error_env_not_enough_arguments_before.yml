@@ -1,0 +1,4 @@
+---
+meta1:
+  layer1:
+  - param2: !MK:env() param2

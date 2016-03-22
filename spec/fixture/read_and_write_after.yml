@@ -1,0 +1,3 @@
+---
+password1: !MK:write($NATS_PASSWORD,after_password) after_password
+password2: !MK:read($NATS_PASSWORD) after_password
