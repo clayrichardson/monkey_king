@@ -1,0 +1,4 @@
+---
+meta1:
+  layer1:
+  - nat_user: !MK:read(NATS_USER) nats_user

@@ -1,0 +1,5 @@
+---
+meta1:
+  layer1:
+  - nat_password: !MK:write(NATS_PASSWORD,secret(10)) NATS_PASSWORD
+  - nat_password_again: !MK:write(NATS_PASSWORD,secret(10)) NATS_PASSWORD_AGAIN

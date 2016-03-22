@@ -1,84 +1,135 @@
 require 'yaml'
+require 'securerandom'
+require 'sexpistol'
+require 'pry'
 
 module MonkeyKing
-  class SecretTag
-    yaml_tag '!MK:secret'
+  @@variables = {}
 
-    attr_reader :secret
-
-    def initialize( *secret )
-      self.secret = *secret
-    end
-
-    def init_with( coder )
-      case coder.type
-      when :scalar
-        self.secret = coder.scalar
-      else
-        raise "Dunno how to handle #{coder.type} for #{coder.inspect}"
-      end
-    end
-
-    def encode_with( coder )
-      coder.style = Psych::Nodes::Mapping::FLOW
-      coder.scalar = gen_secret(@secret.length)
-    end
-
-    protected def secret=( str )
-      @secret= str
-    end
-
-    def gen_secret(length)
-      [*('a'..'z'),*('0'..'9'),*('A'..'Z')].shuffle[0,length].join
-    end
+  def self.variables
+    @@variables
+  end
+  def self.variables=(value)
+    @@variables = value
+  end
+  def self.set_variable(name, value)
+    @@variables[name] = value
+    return value
   end
 
-  class EnvTag
-    attr_reader :env_tag
+  class FunctionTag
+    attr_accessor :scalar
 
     def register(tag)
-      if tag.split(':')[1] == 'env'
-        self.class.send(:yaml_tag, tag)
-      end
+      self.class.send(:yaml_tag, tag)
     end
 
-    def init_with( coder )
+    def init_with(coder)
       unless coder.type == :scalar
         raise "Dunno how to handle #{coder.type} for #{coder.inspect}"
       end
+      self.scalar = coder.scalar
     end
 
     def encode_with(coder)
       coder.style = Psych::Nodes::Mapping::FLOW
-      tag=coder.tag.split(':')[2]
-      if ENV[tag].nil?
-        raise "#{tag} not found in env"
+      s_expression = coder.tag.sub(/^!MK:/, '')
+      s_expression.gsub!(/,/, ' ')
+
+      expression_tree = Sexpistol.new.parse_string(s_expression)
+      coder.scalar = expand(expression_tree).first
+    end
+
+    def expand(expression)
+      if expression.is_a? Array
+        function_array = []
+        expression.each do |ex|
+          function_array << expand(ex)
+        end
+
+        process_array = []
+
+        while !function_array.empty? do
+          key_word = function_array.shift
+          case key_word
+          when :write
+            params = function_array.shift
+            raise "too many arguments for write function (#{params.size} of 2)" if params.size > 2
+            raise "not enough arguments for write function (#{params.size} of 2)" if params.size < 2
+            key = params.first
+            value = params.last
+            raise "attempting to redefine immutable variable #{key}, exiting" unless MonkeyKing.variables[key].nil?
+            process_array << MonkeyKing.set_variable(key, value.to_s)
+          when :read
+            params = function_array.shift
+            raise "too many arguments for read function (#{params.size} of 1)" if params.size > 1
+            raise "not enough arguments for read function (#{params.size} of 1)" if params.size < 1
+            key = params.first
+            raise "unresolved variables #{key}" if MonkeyKing.variables[key].nil?
+            process_array << MonkeyKing.variables[key]
+          when :secret
+            params = function_array.shift
+            raise "too many arguments for secret function (#{params.size} of 1)" if params.size > 1
+            raise "not enough arguments for secret function (#{params.size} of 1)" if params.size < 1
+            raise "argument error for secret function: got #{params.first.class} instead of Fixnum" if !params.first.is_a? Fixnum
+            length = params.first
+            process_array << gen_secret(length)
+          when :env
+            params = function_array.shift
+            raise "too many arguments for env function (#{params.size} of 1)" if params.size > 1
+            raise "not enough arguments for env function (#{params.size} of 1)" if params.size < 1
+            key = params.first.to_s
+            process_array << get_env(key)
+          when :format
+            params = function_array.shift
+            formating_string = self.scalar
+            params.each do |param|
+              formating_string.sub!(/%s/, param)
+            end
+            process_array << formating_string
+          else
+            process_array << key_word
+          end
+        end
+        return process_array
+
+      elsif expression.is_a? Symbol
+        return expression
+      elsif expression.is_a? Numeric
+        return expression
+      elsif expression.is_a? String
+        return expression
+      else
+        raise "unknown expression #{expression}"
       end
-      coder.scalar = ENV[tag]
+    end
+
+    def get_env(key)
+      return ENV[key]
+    end
+
+    def gen_secret(length)
+      return [*('a'..'z'),*('0'..'9'),*('A'..'Z')].shuffle[0,length].join
     end
   end
 
   class Parser
+
     def transform(yaml_file)
+      function_tag_instances = {}
       tags = get_tags(yaml_file)
-      env_tag_instances={}
+
       tags.each do |tag|
-        command = tag.split(':')[1]
-        unless command.nil? or command != 'env'
-          class_name = tag.split(':')[2]
-          unless class_name.nil?
-            tag_class = Class.new(EnvTag)
-
-            # Hacky way to give each class a global uniq name
-            random_string = [*('a'..'z')].shuffle[0,32].join
-            Object.const_set("EnvTag#{class_name}#{random_string}", tag_class)
-
-            tag_instance = tag_class.new
-            tag_instance.register(tag)
-            env_tag_instances[tag] = tag_instance
-          end
+        if tag =~ /!MK:/
+          tag_class = Class.new(FunctionTag)
+          random_string = SecureRandom.uuid.gsub(/-/, '')
+          Object.const_set("FunctionTag#{random_string}", tag_class)
+          tag_instance = tag_class.new
+          tag_instance.register(tag)
+          function_tag_instances[tag] = tag_instance
         end
       end
+
       yaml = YAML.load_file(yaml_file)
       yaml.to_yaml
     end

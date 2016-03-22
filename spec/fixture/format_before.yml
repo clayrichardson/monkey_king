@@ -1,0 +1,11 @@
+---
+meta1:
+  not_secret: not_secret
+  layer1:
+  - nat_user: !MK:write(NATS_USER,env(NATS_USER)) replaceme
+  - nat_host: !MK:write(NATS_HOST,env(NATS_HOST)) replaceme
+  - nat_password: !MK:write(NATS_PASSWORD,secret(12)) replaceme
+  layer2:
+  - nat_connection: !MK:write(NATS_STRING,format(read(NATS_USER),read(NATS_PASSWORD),read(NATS_HOST))) https://%s:%s@%s
+  layer3:
+  - nat_string: !MK:format(read(NATS_STRING)) ==%s==
