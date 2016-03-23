@@ -102,7 +102,7 @@ meta:
 ```
 
 ## Combine them all
-You can use combine the directive in a LISP-like syntax to create more poweful usages:
+You can combine the directive in a LISP-like syntax to create more poweful usages:
 
 ####Example:
 
