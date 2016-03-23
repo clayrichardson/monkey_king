@@ -84,6 +84,9 @@ module MonkeyKing
           when :format
             params = function_array.shift
             formating_string = self.scalar
+            replace_count =  formating_string.scan(/%s/).count
+            raise "too many arguments for format function (#{params.size} of #{replace_count})" if params.size > replace_count
+            raise "not enough arguments for format function (#{params.size} of #{replace_count})" if params.size < replace_count
             params.each do |param|
               formating_string.sub!(/%s/, param)
             end

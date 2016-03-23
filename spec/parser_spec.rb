@@ -115,6 +115,17 @@ describe MonkeyKing::Parser do
         }.to raise_error('too many arguments for env function (2 of 1)')
       end
 
+      it 'raise error when format get more argument than the %s in the string' do
+        expect {
+          exercise_fixture('error_format_too_many_arguments')
+        }.to raise_error('too many arguments for format function (5 of 3)')
+      end
+
+      it 'raise error when format get more argument than the %s in the string' do
+        expect {
+          exercise_fixture('error_format_not_enough_arguments')
+        }.to raise_error('not enough arguments for format function (0 of 1)')
+      end
     end
 
     context 'semantics error' do
@@ -129,7 +140,6 @@ describe MonkeyKing::Parser do
           exercise_fixture('error_redefine_immutable')
         }.to raise_error('attempting to redefine immutable variable NATS_PASSWORD, exiting')
       end
-
 
       it 'raise error when env not found in the system env' do
         expect {

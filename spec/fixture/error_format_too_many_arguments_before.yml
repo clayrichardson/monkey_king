@@ -1,0 +1,4 @@
+---
+meta1:
+  layer1:
+  - param2: !MK:format(secret(1),secret(2),secret(3),secret(4),secret(5)) =%s=%s=%s=
