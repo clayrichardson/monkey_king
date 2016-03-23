@@ -9,9 +9,11 @@ module MonkeyKing
   def self.variables
     @@variables
   end
+
   def self.variables=(value)
     @@variables = value
   end
+
   def self.set_variable(name, value)
     @@variables[name] = value
     return value
@@ -105,6 +107,7 @@ module MonkeyKing
     end
 
     def get_env(key)
+      raise "#{key} not found in env" if ENV[key].nil?
       return ENV[key]
     end
 
