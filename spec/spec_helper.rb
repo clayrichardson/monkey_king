@@ -9,8 +9,8 @@ def fixture_file_path(filename)
   File.expand_path(File.join(__FILE__, '../fixture/', filename))
 end
 
-def load_fixtures(fixture_name)
-   before = load_file("#{fixture_name}_before.yml")
-   after = load_file("#{fixture_name}_after.yml")
-   return before, after
+def prepare_fixtures(fixture_name)
+   before_file_path = fixture_file_path("#{fixture_name}_before.yml")
+   after_content = load_file("#{fixture_name}_after.yml")
+   return before_f, after
 end

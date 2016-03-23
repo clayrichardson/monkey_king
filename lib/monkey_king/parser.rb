@@ -37,7 +37,6 @@ module MonkeyKing
       coder.style = Psych::Nodes::Mapping::FLOW
       s_expression = coder.tag.sub(/^!MK:/, '')
       s_expression.gsub!(/,/, ' ')
-
       expression_tree = Sexpistol.new.parse_string(s_expression)
       coder.scalar = expand(expression_tree).first
     end
