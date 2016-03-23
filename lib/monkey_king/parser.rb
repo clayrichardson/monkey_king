@@ -157,5 +157,4 @@ module MonkeyKing
       tags.uniq
     end
   end
-
 end

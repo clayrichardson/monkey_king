@@ -58,5 +58,14 @@ module MonkeyKing
       puts "Done."
     end
 
+    desc "Demo MK transform for one file"
+    input :file, :argument => true
+    def demo
+      file = input[:file]
+      parser = MonkeyKing::Parser.new
+      puts parser.transform(file)
+    end
+
+
   end
 end
