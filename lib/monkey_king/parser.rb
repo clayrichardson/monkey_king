@@ -41,6 +41,15 @@ module MonkeyKing
       coder.scalar = expand(expression_tree).first
     end
 
+
+    def argment_count_checking(params_count, legit_count, function_name)
+      if params_count > legit_count
+        raise "too many arguments for #{function_name} function (#{params_count} of #{legit_count})"
+      elsif params_count < legit_count
+        raise "not enough arguments for #{function_name} function (#{params_count} of #{legit_count})"
+      end
+    end
+
     def expand(expression)
       if expression.is_a? Array
         function_array = []
@@ -55,38 +64,33 @@ module MonkeyKing
           case key_word
           when :write
             params = function_array.shift
-            raise "too many arguments for write function (#{params.size} of 2)" if params.size > 2
-            raise "not enough arguments for write function (#{params.size} of 2)" if params.size < 2
+            argment_count_checking(params.size, 2, key_word)
             key = params.first
             value = params.last
             raise "attempting to redefine immutable variable #{key}, exiting" unless MonkeyKing.variables[key].nil?
             process_array << MonkeyKing.set_variable(key, value.to_s)
           when :read
             params = function_array.shift
-            raise "too many arguments for read function (#{params.size} of 1)" if params.size > 1
-            raise "not enough arguments for read function (#{params.size} of 1)" if params.size < 1
+            argment_count_checking(params.size, 1, key_word)
             key = params.first
             raise "unresolved variables #{key}" if MonkeyKing.variables[key].nil?
             process_array << MonkeyKing.variables[key]
           when :secret
             params = function_array.shift
-            raise "too many arguments for secret function (#{params.size} of 1)" if params.size > 1
-            raise "not enough arguments for secret function (#{params.size} of 1)" if params.size < 1
+            argment_count_checking(params.size, 1, key_word)
             raise "argument error for secret function: got #{params.first.class} instead of Fixnum" if !params.first.is_a? Fixnum
             length = params.first
             process_array << gen_secret(length)
           when :env
             params = function_array.shift
-            raise "too many arguments for env function (#{params.size} of 1)" if params.size > 1
-            raise "not enough arguments for env function (#{params.size} of 1)" if params.size < 1
+            argment_count_checking(params.size, 1, key_word)
             key = params.first.to_s
             process_array << get_env(key)
           when :format
             params = function_array.shift
             formating_string = self.scalar
             replace_count =  formating_string.scan(/%s/).count
-            raise "too many arguments for format function (#{params.size} of #{replace_count})" if params.size > replace_count
-            raise "not enough arguments for format function (#{params.size} of #{replace_count})" if params.size < replace_count
+            argment_count_checking(params.size, replace_count, key_word)
             params.each do |param|
               formating_string.sub!(/%s/, param)
             end

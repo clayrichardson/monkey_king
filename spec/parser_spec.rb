@@ -54,7 +54,14 @@ describe MonkeyKing::Parser do
   context '#combinations' do
     it 'read env and write to variables for read later' do
       ClimateControl.modify id1: 'id1_from_env', id2: 'id2_from_env' do
-        exercise_fixture('write_env_read')
+        exercise_fixture('combine_write_env_read')
+      end
+    end
+
+    it 'format string from env and secret' do
+      ClimateControl.modify id1: 'id1_from_env' do
+        allow_any_instance_of(MonkeyKing::FunctionTag).to receive(:gen_secret).and_return('password')
+        exercise_fixture('combine_format_env_secret')
       end
     end
   end
