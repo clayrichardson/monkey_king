@@ -2,12 +2,12 @@
 
 Monkey king is a tool which is initially designed for generating deployment manifests for a bosh deployment based on an existing deployment, and it could also be used for other purposes like performing functions on keys/values in yaml files based on yaml tags.
 
-Here is some scenarios about how it works:
+Here is some scenarios about how it works, some of these examples are in the `./fixtures/` directory:
 
 ## Using secret generation
-The `!MK:secret(<password_length>)` directive generates a random secret with the lenght specified in the parameter
+The `!MK:secret(<password_length>)` directive generates a random secret using [a-Z,0-9] with the length specified in the parameter.
 
-Before
+Before:
 
 ```
 ---
@@ -17,7 +17,7 @@ meta:
   not_secret: not_secret
 ```
 
-After
+After:
 ```
 ---
 meta:
@@ -63,7 +63,10 @@ meta1:
 ## Using Read and Write
 The `!MK:read(<variable_name>)` and `!MK:write(<variable_name>,<value>)` directive is used to save the generated value and use it later.
 
-Before
+**NOTE: at this time, reads must be ordered after writes in the YAML document until we implement a dependency graph.**
+
+Before:
+
 ```
 ---
 meta:
@@ -71,7 +74,8 @@ meta:
   same_secret_again: !MK:read(nat_secret) replace_me
 ```
 
-After
+After:
+
 ```
 ---
 meta:
@@ -79,26 +83,32 @@ meta:
   same_secret_again: !MK:read(nat_secret) SAME_PASSWORD_HERE
 ```
 
-## Using string format
-The `!MK:format(<variable_1,variable_2>,...)` directive can be used to format the string given in the yaml field.
+# Using string format
+The `!MK:format(<variable_1>,<variable_2>,...,<string>)` directive can be used to format the string given in the yaml field. This is usally used with `write_value` directive which store the template to a variable.
+
+**NOTE: The string literal must be defined outside of the YAML tag, as there is a limited set of allowed characters in YAML tags. See usage of `nat_template` in example below**
 
 Given:
+
 ```
 export NAT_HOST=10.10.0.6
 ```
 
-Before
+Before:
+
 ```
 ---
+nat_template: write_value(TEMPLATE) https://%s
 meta:
-  nat_url: !MK:format(env(NAT_HOST)) https://%s
+  nat_url: !MK:format(env(NAT_HOST),read(TEMPLATE)) replaceme
 ```
 
-After
+After:
 ```
 ---
+nat_template: write_value(TEMPLATE) https://%s
 meta:
-  nat_url: !MK:format(env(NAT_HOST)) https://10.10.0.6
+  nat_url: !MK:format(env(NAT_HOST),read(TEMPLATE)) https://10.10.0.6
 ```
 
 ## Combine them all
@@ -107,14 +117,18 @@ You can combine the directive in a LISP-like syntax to create more poweful usage
 ####Example:
 
 Given:
-```
-export NAT_USER=nats_user
-export NAT_HOST=10.10.0.6
-```
-
-Before
 
 ```
+export NATS_USER=nats_user
+export NATS_HOST=10.10.0.6
+```
+
+Before:
+
+```
+nat_template_1: !MK:write_value(NAT_TEMPLATE_1) https://%s:%s@%s
+nat_template_2: !MK:write_value(NAT_TEMPLATE_2) '%s/info'
+
 meta1:
   not_secret: not_secret
   layer1:
@@ -122,23 +136,26 @@ meta1:
   - nat_host: !MK:write(NATS_HOST,env(NATS_HOST)) replaceme
   - nat_password: !MK:write(NATS_PASSWORD,secret(12)) replaceme
   layer2:
-  - nat_connection: !MK:write(NATS_STRING,format(read(NATS_USER),read(NATS_PASSWORD),read(NATS_HOST))) https://%s:%s@%s
-  - info_endpoint: !MK:format(read(NATS_STRING)) '%s/info'
+  - nat_connection: !MK:write(NATS_STRING,format(read(NATS_USER),read(NATS_PASSWORD),read(NATS_HOST),read(NAT_TEMPLATE_1))) 
+  - info_endpoint: !MK:format(read(NATS_STRING),read(NAT_TEMPLATE_2)) 
 ```
 
 
-After
+After:
 
 ```
+---
+nat_template_1: !MK:write_value(NAT_TEMPLATE_1) https://%s:%s@%s
+nat_template_2: !MK:write_value(NAT_TEMPLATE_2) '%s/info'
 meta1:
   not_secret: not_secret
   layer1:
   - nat_user: !MK:write(NATS_USER,env(NATS_USER)) nats_user
   - nat_host: !MK:write(NATS_HOST,env(NATS_HOST)) 10.10.0.6
-  - nat_password: !MK:write(NATS_PASSWORD,secret(12)) SOMEPASSWORD
+  - nat_password: !MK:write(NATS_PASSWORD,secret(12)) WxhUE4RoJXYF
   layer2:
-  - nat_connection: !MK:write(NATS_STRING,format(read(NATS_USER),read(NATS_PASSWORD),read(NATS_HOST))) https://nats_user:SOMEPASSWORD@10.10.0.6
-  - info_endpoint: !MK:format(read(NATS_STRING)) https://nats_user:SOMEPASSWORD@10.10.0.6/info
+  - nat_connection: !MK:write(NATS_STRING,format(read(NATS_USER),read(NATS_PASSWORD),read(NATS_HOST),read(NAT_TEMPLATE_1))) https://nats_user:WxhUE4RoJXYF@10.10.0.6
+  - info_endpoint: !MK:format(read(NATS_STRING),read(NAT_TEMPLATE_2)) https://nats_user:WxhUE4RoJXYF@10.10.0.6/info
 ```
 
 ## Installation
@@ -185,6 +202,7 @@ Commands:
   clone REPO DIR  	use MK to clone github repo and transform
   replace GLOBS...	Do MK transform for existing directory(ies)
   demo FILE       	Demo MK transform for one file```
+```
 ```
 $ mk help clone
 Clone the repo and replace secret and env annotation

@@ -153,6 +153,14 @@ describe MonkeyKing::Parser do
           exercise_fixture('error_env_not_found')
         }.to raise_error('ENV_NOT_FOUND not found in env')
       end
+
+      it 'raise error when format does not get a template' do
+        expect {
+          exercise_fixture('error_format_template_not_found')
+        }.to raise_error('format template not found')
+      end
+
+
     end
 
   end

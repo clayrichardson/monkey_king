@@ -2,4 +2,4 @@
 meta1:
   nat_template: !MK:write_value(NAT_TEMPLATE) https://%s
   layer1:
-  - param2: !MK:format(read(NAT_TEMPLATE)) replaceme
+  - param2: !MK:format() replaceme

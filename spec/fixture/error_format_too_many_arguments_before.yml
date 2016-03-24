@@ -1,4 +1,5 @@
 ---
 meta1:
+  nat_template: !MK:write_value(NAT_TEMPLATE) =%s=%s=%s=
   layer1:
-  - param2: !MK:format(secret(1),secret(2),secret(3),secret(4),secret(5)) =%s=%s=%s=
+  - param2: !MK:format(secret(1),secret(2),secret(3),secret(4),secret(5),read(NAT_TEMPLATE)) replaceme

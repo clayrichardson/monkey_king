@@ -86,13 +86,19 @@ module MonkeyKing
             argment_count_checking(params.size, 1, key_word)
             key = params.first.to_s
             process_array << get_env(key)
+          when :write_value
+            params = function_array.shift
+            argment_count_checking(params.size, 1, key_word)
+            key = params.first
+            process_array << MonkeyKing.set_variable(key, self.scalar)
           when :format
             params = function_array.shift
-            formating_string = self.scalar
+            formating_string = params.pop
+            raise('format template not found') if formating_string.nil?
             replace_count =  formating_string.scan(/%s/).count
             argment_count_checking(params.size, replace_count, key_word)
             params.each do |param|
-              formating_string.sub!(/%s/, param)
+              formating_string = formating_string.sub(/%s/, param.to_s)
             end
             process_array << formating_string
           else

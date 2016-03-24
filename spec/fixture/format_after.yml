@@ -1,11 +1,13 @@
 ---
 meta1:
   not_secret: not_secret
+  nat_template: !MK:write_value(NAT_TEMPLATE) https://%s:%s@%s
+  nat_template_2: !MK:write_value(NAT_TEMPLATE_2) ==%s==
   layer1:
   - nat_user: !MK:write(NATS_USER,env(NATS_USER)) nats_user
   - nat_host: !MK:write(NATS_HOST,env(NATS_HOST)) nats_host
   - nat_password: !MK:write(NATS_PASSWORD,secret(12)) nats_password
   layer2:
-  - nat_connection: !MK:write(NATS_STRING,format(read(NATS_USER),read(NATS_PASSWORD),read(NATS_HOST))) https://nats_user:nats_password@nats_host
+  - nat_connection: !MK:write(NATS_STRING,format(read(NATS_USER),read(NATS_PASSWORD),read(NATS_HOST),read(NAT_TEMPLATE))) https://nats_user:nats_password@nats_host
   layer3:
-  - nat_string: !MK:format(read(NATS_STRING)) ==https://nats_user:nats_password@nats_host==
+  - nat_string: !MK:format(read(NATS_STRING),read(NAT_TEMPLATE_2)) ==https://nats_user:nats_password@nats_host==
