@@ -4,7 +4,7 @@ require 'highline/import'
 module MonkeyKing
   class CloneCommand < Mothership
 
-    desc "Clone the repo and replace secret and env annotation"
+    desc "use MK to clone github repo and transform"
     input :repo, :argument => true
     input :dir, :argument => [:splat, true]
     def clone
@@ -23,6 +23,7 @@ module MonkeyKing
 
       deployment_yaml_files.each do |file|
         puts "Transforming #{file}..."
+        MonkeyKing.variables = {}
         transformed_content = parser.transform(file)
         File.open(file, "w") do |overwrite_file|
           overwrite_file.write transformed_content
@@ -31,7 +32,7 @@ module MonkeyKing
       puts "Done."
     end
 
-    desc "Replace secret and env annotation for existing directory"
+    desc "Do MK transform for existing directory(ies)"
     input :globs, :argument => :splat
     def replace
       globs = input[:globs]
@@ -47,6 +48,7 @@ module MonkeyKing
         extension = file.split('.').last
         if extension == 'yml'
           puts "Transforming #{file}..."
+          MonkeyKing.variables = {}
           transformed_content = parser.transform(file)
           File.open(file, "w") do |overwrite_file|
             overwrite_file.write transformed_content
@@ -65,7 +67,6 @@ module MonkeyKing
       parser = MonkeyKing::Parser.new
       puts parser.transform(file)
     end
-
 
   end
 end

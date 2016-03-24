@@ -179,12 +179,12 @@ bundle exec mk demo ~/tmp/demo.yml
 
 ## Full Usage
 ```
-$ mk help
+$ mk
 Commands:
-  help [COMMAND]   	Help!
-  clone REPO DIR...	Clone the repo and replace secret and env annotation
-  replace GLOBS... 	Replace secret and env annotation for existing directory
-```
+  help [COMMAND]  	Help!
+  clone REPO DIR  	use MK to clone github repo and transform
+  replace GLOBS...	Do MK transform for existing directory(ies)
+  demo FILE       	Demo MK transform for one file```
 ```
 $ mk help clone
 Clone the repo and replace secret and env annotation
