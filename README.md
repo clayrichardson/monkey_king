@@ -83,7 +83,7 @@ meta:
   same_secret_again: !MK:read(nat_secret) SAME_PASSWORD_HERE
 ```
 
-# Using string format
+## Using string format
 The `!MK:format(<variable_1>,<variable_2>,...,<string>)` directive can be used to format the string given in the yaml field. This is usally used with `write_value` directive which store the template to a variable.
 
 **NOTE: The string literal must be defined outside of the YAML tag, as there is a limited set of allowed characters in YAML tags. See usage of `nat_template` in example below**
