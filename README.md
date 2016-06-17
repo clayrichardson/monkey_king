@@ -98,7 +98,7 @@ Before:
 
 ```
 ---
-nat_template: write_value(TEMPLATE) https://%s
+nat_template: !MK:write_value(TEMPLATE) https://%s
 meta:
   nat_url: !MK:format(env(NAT_HOST),read(TEMPLATE)) replaceme
 ```
@@ -106,7 +106,7 @@ meta:
 After:
 ```
 ---
-nat_template: write_value(TEMPLATE) https://%s
+nat_template: !MK:write_value(TEMPLATE) https://%s
 meta:
   nat_url: !MK:format(env(NAT_HOST),read(TEMPLATE)) https://10.10.0.6
 ```
